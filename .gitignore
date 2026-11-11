@@ -1,0 +1,20 @@
+# Python のキャッシュ（build.py などを読み込んだときにできる）
+__pycache__/
+*.py[cod]
+
+# OS が作るファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+*:Zone.Identifier
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+*~
+
+# Claude Code の個人設定（共有する設定は .claude/settings.json に書く）
+.claude/settings.local.json
+
+# 注意：script.min.js は公開に必要なので Git に含める（build.py で生成）
