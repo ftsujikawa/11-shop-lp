@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>見本ベーカリー こむぎ堂（架空）</title>
+  <meta name="description" content="見本町のパン屋「見本ベーカリー こむぎ堂」（架空のサンプル）。菓子パンから食パンまで、税込220円から。">
+  <link rel="icon" href="img/favicon.svg?v=d4ca91d2" type="image/svg+xml">
+  <!-- 最初の画面に必要なスタイル（クリティカル CSS）。
+       外部ファイルを待たずに描画できるよう、ここに直接書く。残りは style.css -->
+  <style>
+    :root {
+      --bg: #fdf8f1;
+      --surface: #ffffff;
+      --text: #3b2f25;
+      --muted: #7a6a5c;
+      --accent: #c8748c;
+      --accent-dark: #a25a1c;
+      --accent-deeper: #8a4a14;
+      --muted-strong: #5e4f42;
+      --line: #eadfd2;
+      --closed-bg: #d9d9d9;
+      --closed-text: #5f5f5f;
+      --error: #c0392b;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    /* 固定ヘッダーの高さ分だけ、ページ内リンクの移動先とフォーカス位置を下げる（JS が実測値で上書き） */
+    html { --header-h: 72px; scroll-padding-top: calc(var(--header-h) + 8px); }
+    @media (max-width: 480px) { html { --header-h: 120px; } }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+      line-height: 1.8;
+    }
+    a { color: var(--accent-dark); }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+    /* ヘッダー */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .site-header .container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px 16px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; margin: 0; }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.9rem; }
+    .site-nav a { text-decoration: none; }
+    .site-nav a:hover { text-decoration: underline; }
+    /* 幅 360px 以下では間隔を詰めて、メニュー4つを1行に収める（ヘッダーが高くなりすぎないように） */
+    @media (max-width: 360px) { .site-nav { column-gap: 12px; } }
+    /* 電話番号・番地・品目名などを途中で折り返さない（狭い幅ではまとめて次の行へ送る）。
+       最初の画面でも使うので、style.css ではなくここに書く */
+    .nowrap { white-space: nowrap; }
+
+    /* ファーストビュー */
+    .hero { text-align: center; padding: 56px 0 48px; }
+    .hero-catch { font-size: clamp(1.6rem, 6vw, 2.6rem); line-height: 1.4; margin: 0 0 16px; }
+    .hero-catch .price { color: var(--accent); }
+    .hero-lead { color: var(--muted); margin: 0 0 28px; text-wrap: balance; } /* 折り返したとき各行の長さをそろえる */
+    .hero-info {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 20px;
+      margin: 0 0 28px;
+      padding: 0;
+      list-style: none;
+      font-size: 0.95rem;
+    }
+    .hero-info li::before { content: "● "; color: var(--accent); }
+
+    /* ボタン */
+    .btn {
+      display: inline-block;
+      background: var(--accent-dark); /* 白文字と 4.5:1 以上にするため濃いほうのオレンジ */
+      color: #fff;
+      text-decoration: none;
+      font: inherit;
+      font-weight: 700;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-deeper); }
+    .btn:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+    /* セクション共通 */
+    section { padding: 48px 0; }
+    section:nth-of-type(even) { background: var(--surface); }
+    .section-title { font-size: 1.5rem; text-align: center; margin: 0 0 8px; }
+    .section-lead { text-align: center; color: var(--muted); margin: 0 0 32px; }
+
+    /* メニュー */
+    .menu-group { margin-bottom: 36px; }
+    .menu-group:last-child { margin-bottom: 0; }
+    .menu-group-title {
+      font-size: 1.15rem;
+      margin: 0 0 12px;
+      padding-left: 12px;
+      border-left: 5px solid var(--accent);
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .menu-name { font-weight: 700; }
+    .menu-price { font-size: 1.4rem; font-weight: 700; color: var(--accent-dark); text-align: right; }
+    .menu-price small { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+    .note { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 24px 0 0; }
+  </style>
+  <!-- 残りのスタイルは描画を止めずに読み込む（media="print" で取得し、読み込み後に全画面へ適用） -->
+  <link rel="stylesheet" href="style.css?v=ddcd749d" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="style.css?v=ddcd749d"></noscript>
+  <script src="script.min.js?v=f0e2da6d" defer></script>
+  <!-- 構造化データ（schema.org/Bakery）。値は shop.md の店名・住所・電話番号・営業時間のみ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    "name": "見本ベーカリー こむぎ堂",
+    "address": {
+      "@type": "PostalAddress",
+      "postalCode": "000-0000",
+      "addressRegion": "見本県",
+      "addressLocality": "見本市",
+      "streetAddress": "見本町 1-2-3"
+    },
+    "telephone": "000-0000-0000",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "https://schema.org/Tuesday",
+          "https://schema.org/Wednesday",
+          "https://schema.org/Thursday",
+          "https://schema.org/Friday",
+          "https://schema.org/Saturday",
+          "https://schema.org/Sunday"
+        ],
+        "opens": "08:00",
+        "closes": "18:00"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <p class="logo">見本ベーカリー こむぎ堂</p>
+      <nav class="site-nav" aria-label="ページ内リンク">
+        <a href="#menu">メニュー</a>
+        <a href="#calendar">営業日</a>
+        <a href="#access">店舗情報</a>
+        <a href="#contact">お問い合わせ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ファーストビュー -->
+    <div class="hero">
+      <div class="container">
+        <h1 class="hero-catch">菓子パンから食パンまで<br><span class="price">税込220円</span>から</h1>
+        <p class="hero-lead"><span class="nowrap">菓子パン</span>・<span class="nowrap">惣菜パン</span>・<span class="nowrap">食パン</span>・<span class="nowrap">ハード系</span>・<span class="nowrap">ドリンクをご用意しています。</span></p>
+        <ul class="hero-info">
+          <li>火〜日 8:00〜18:00</li>
+          <li>定休日：月曜・第3火曜</li>
+          <li>専用駐車場 3台</li>
+        </ul>
+        <div><a class="btn" href="#menu">メニューを見る</a></div>
+      </div>
+    </div>
+
+    <!-- メニュー -->
+    <section id="menu">
+      <div class="container">
+        <h2 class="section-title">メニュー</h2>
+        <p class="section-lead">価格はすべて税込です。</p>
+
+        <div class="menu-group">
+          <h3 class="menu-group-title">菓子パン</h3>
+          <ul class="menu-grid">
+            <li class="menu-card"><span class="menu-name">メロンパン</span><span class="menu-price">220<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">クリームパン</span><span class="menu-price">240<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">シナモンロール</span><span class="menu-price">280<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">あんバター</span><span class="menu-price">290<small>円</small></span></li>
+          </ul>
+        </div>
+
+        <div class="menu-group">
+          <h3 class="menu-group-title">惣菜パン</h3>
+          <ul class="menu-grid">
+            <li class="menu-card"><span class="menu-name">カレーパン</span><span class="menu-price">260<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">ベーコンエピ</span><span class="menu-price">300<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">たまごサンド</span><span class="menu-price">380<small>円</small></span></li>
+          </ul>
+        </div>
+
+        <div class="menu-group">
+          <h3 class="menu-group-title">食パン</h3>
+          <ul class="menu-grid">
+            <li class="menu-card"><span class="menu-name">こむぎ堂の角食パン（1斤）</span><span class="menu-price">420<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">山型イギリスパン（1斤）</span><span class="menu-price">450<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">レーズン食パン（1斤）</span><span class="menu-price">520<small>円</small></span></li>
+          </ul>
+        </div>
+
+        <div class="menu-group">
+          <h3 class="menu-group-title">ハード系・ドリンク</h3>
+          <ul class="menu-grid">
+            <li class="menu-card"><span class="menu-name">くるみとチーズのバタール</span><span class="menu-price">350<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">バゲット</span><span class="menu-price">380<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">カンパーニュ（ハーフ）</span><span class="menu-price">480<small>円</small></span></li>
+            <li class="menu-card"><span class="menu-name">ドリップコーヒー（テイクアウト）</span><span class="menu-price">300<small>円</small></span></li>
+          </ul>
+        </div>
+
+        <p class="note">パンがなくなり次第、営業を終了します。</p>
+      </div>
+    </section>
+
+    <!-- まとめ買い・予約 -->
+    <section id="reserve">
+      <div class="container">
+        <h2 class="section-title">まとめ買い・取り置きのご予約</h2>
+        <p class="section-lead">5個以上のまとめ買いと、食パン・ハード系の取り置きはご予約いただけます。</p>
+        <div class="bulk-box">
+          <ul>
+            <li>ご予約方法：お電話（営業時間内）または店頭のレジにて</li>
+            <li>受付期限：受け取り日の前日 17:00 まで</li>
+            <li>受け取り：ご予約時に指定した時間に店頭でお渡しします</li>
+            <li>お支払い：受け取り時</li>
+          </ul>
+          <div class="btn-wrap"><a class="btn" href="tel:000-0000-0000">電話で予約する <span class="nowrap">000-0000-0000</span></a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- こだわり -->
+    <section id="points">
+      <div class="container">
+        <h2 class="section-title">こむぎ堂のこだわり</h2>
+        <ul class="points">
+          <li>
+            <h3>国産小麦 100%</h3>
+            <p>生地にはすべて国産小麦を使い、香りと甘みを引き出しています。</p>
+          </li>
+          <li>
+            <h3>自家製酵母の長時間発酵</h3>
+            <p>自家製の酵母で一晩じっくり発酵させ、しっとりもちもちの食感に仕上げています。</p>
+          </li>
+          <li>
+            <h3>毎朝の焼きたて</h3>
+            <p>その日の朝に店内の窯で焼いたパンだけを並べています。</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 営業日カレンダー -->
+    <section id="calendar">
+      <div class="container">
+        <h2 class="section-title">営業日カレンダー</h2>
+        <p class="section-lead">定休日：毎週月曜日、第3火曜日（祝日の月曜日は営業し、翌火曜日がお休みです）</p>
+        <div class="calendar-wrap">
+          <table class="calendar" id="business-calendar">
+            <caption id="calendar-caption">今月の営業日</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sun">日</th>
+                <th scope="col">月</th>
+                <th scope="col">火</th>
+                <th scope="col">水</th>
+                <th scope="col">木</th>
+                <th scope="col">金</th>
+                <th scope="col" class="sat">土</th>
+              </tr>
+            </thead>
+            <tbody id="calendar-body">
+              <tr><td colspan="7" class="calendar-fallback">カレンダーを表示するには JavaScript を有効にしてください。</td></tr>
+            </tbody>
+          </table>
+          <ul class="calendar-legend">
+            <li><span class="legend-swatch legend-open"></span>営業日</li>
+            <li><span class="legend-swatch legend-closed"></span>定休日</li>
+            <li><span class="legend-swatch legend-today"></span>今日</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 店舗情報 -->
+    <section id="access">
+      <div class="container">
+        <h2 class="section-title">店舗情報</h2>
+        <table class="info-table">
+          <tr>
+            <th scope="row">店名</th>
+            <td>見本ベーカリー こむぎ堂</td>
+          </tr>
+          <tr>
+            <th scope="row">住所</th>
+            <td><span class="nowrap">〒000-0000</span> <span class="nowrap">見本県</span> <span class="nowrap">見本市</span> <span class="nowrap">見本町 1-2-3</span></td>
+          </tr>
+          <tr>
+            <th scope="row">営業時間</th>
+            <td>8:00〜18:00<br><small>パンがなくなり次第終了</small></td>
+          </tr>
+          <tr>
+            <th scope="row">営業日</th>
+            <td>火曜日〜日曜日</td>
+          </tr>
+          <tr>
+            <th scope="row">定休日</th>
+            <td>毎週月曜日、第3火曜日<br><small>祝日の月曜日は営業し、翌火曜日がお休みです</small></td>
+          </tr>
+          <tr>
+            <th scope="row">駐車場</th>
+            <td>店舗前に専用駐車場 3台<br><small>満車の場合は、近くのコインパーキングをご利用ください</small></td>
+          </tr>
+          <tr>
+            <th scope="row">電話</th>
+            <td><a href="tel:000-0000-0000">000-0000-0000</a></td>
+          </tr>
+          <tr>
+            <th scope="row">メール</th>
+            <td><a href="mailto:info@example.com">info@example.com</a></td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- お問い合わせ -->
+    <section id="contact">
+      <div class="container">
+        <h2 class="section-title">お問い合わせ</h2>
+        <p class="section-lead">ご予約はお電話または店頭のレジにて承ります。</p>
+
+        <form class="contact-form" id="contact-form" novalidate>
+          <div class="form-field">
+            <label for="name">お名前 <span class="required">必須</span></label>
+            <input type="text" id="name" name="name" autocomplete="name" aria-describedby="name-error">
+            <p class="error" id="name-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label for="email">メールアドレス <span class="required">必須</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" inputmode="email" aria-describedby="email-error">
+            <p class="error" id="email-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label for="tel">電話番号 <span class="optional">任意</span></label>
+            <input type="tel" id="tel" name="tel" autocomplete="tel" inputmode="tel" placeholder="例：000-0000-0000" aria-describedby="tel-error">
+            <p class="error" id="tel-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label for="message">お問い合わせ内容 <span class="required">必須</span></label>
+            <textarea id="message" name="message" rows="6" maxlength="1000" aria-describedby="message-count message-error"></textarea>
+            <p class="char-count" id="message-count">0 / 500文字</p>
+            <p class="error" id="message-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn">入力内容を確認する</button>
+          </div>
+          <p class="form-result" id="form-result" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 見本ベーカリー こむぎ堂</p>
+    <p>このページの店舗情報はすべて架空のサンプルです。実在の店舗・地名・電話番号とは関係ありません。</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+/* 最初の画面より下（予約〜フッター）のスタイル。
+   最初の画面に必要な部分（色の変数・基本・ヘッダー・ヒーロー・ボタン・メニュー）は、
+   描画を止めないよう index.html の <style> に直接書いてある。
+   このファイルは index.html から非同期で読み込む。 */
+
+/* まとめ買い・予約 */
+.bulk-box {
+  background: var(--bg);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.bulk-box ul { margin: 0 0 20px; padding-left: 1.2em; }
+.btn-wrap { text-align: center; }
+
+/* こだわり */
+.points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: point;
+}
+.points li {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  counter-increment: point;
+}
+.points li::before {
+  content: "0" counter(point);
+  display: block;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+.points h3 { margin: 4px 0 8px; font-size: 1.1rem; }
+.points p { margin: 0; color: var(--muted); }
+
+/* 営業日カレンダー */
+.calendar-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+.calendar caption {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+.calendar th {
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 4px 0;
+}
+.calendar th.sun { color: #c0392b; }
+.calendar th.sat { color: #2c6fb0; }
+.calendar td {
+  height: 56px;
+  vertical-align: top;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 2px;
+  font-size: 0.95rem;
+}
+.calendar td.empty {
+  background: transparent;
+  border-color: transparent;
+}
+.calendar td.closed {
+  background: var(--closed-bg);
+  border-color: var(--closed-bg);
+  color: var(--closed-text);
+}
+.calendar td.today {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+  font-weight: 700;
+}
+.calendar .day-num { display: block; }
+.calendar .day-label {
+  display: block;
+  font-size: 0.65rem;
+  line-height: 1.3;
+}
+.calendar .label-short { display: none; }
+.calendar td.holiday .day-num { color: #c0392b; }
+.calendar td.closed.holiday .day-num { color: var(--closed-text); }
+.calendar-fallback { height: auto !important; }
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+.legend-open { background: var(--surface); }
+.legend-closed { background: var(--closed-bg); border-color: var(--closed-bg); }
+.legend-today { background: var(--surface); border: 3px solid var(--accent); }
+
+/* 店舗情報 */
+.info-table {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+.info-table th,
+.info-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.info-table th {
+  width: 7.5em;
+  white-space: nowrap;
+  color: var(--muted);
+  font-weight: 700;
+}
+.info-table td small { color: var(--muted); }
+/* 最後の1〜2文字だけが次の行に回らないよう、改行位置を整える（対応ブラウザのみ） */
+.info-table td { text-wrap: pretty; }
+
+/* お問い合わせフォーム */
+.contact-form {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.form-field { margin-bottom: 20px; }
+.form-field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.required,
+.optional {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 8px;
+  margin-left: 6px;
+  border-radius: 4px;
+  vertical-align: 2px;
+}
+.required { background: var(--accent-dark); color: #fff; }
+.optional { background: var(--line); color: var(--muted-strong); }
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  padding: 10px 12px;
+  border: 1px solid #cbbcaa;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.contact-form textarea { resize: vertical; }
+.contact-form [aria-invalid="true"] {
+  border-color: var(--error);
+  background: #fdf1ef;
+}
+.error {
+  color: var(--error);
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+  min-height: 1.2em;
+}
+.char-count {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.char-count.over { color: var(--error); font-weight: 700; }
+.form-actions { text-align: center; }
+.form-result {
+  text-align: center;
+  margin: 16px 0 0;
+  font-weight: 700;
+}
+.form-result:empty { display: none; }
+
+/* フッター */
+.site-footer {
+  text-align: center;
+  padding: 32px 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  .info-table th,
+  .info-table td { display: block; width: auto; }
+  .info-table th { border-bottom: none; padding-bottom: 0; }
+  .calendar { border-spacing: 2px; }
+  .calendar td { height: 48px; font-size: 0.85rem; }
+  /* 祝日名はセルに収まらないので「祝日」と短く表示。正式名は読み上げ用に見えない形で残す */
+  .calendar .label-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .calendar .label-short { display: inline; }
+}
