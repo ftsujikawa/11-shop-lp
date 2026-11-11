@@ -138,6 +138,23 @@
     .menu-price { font-size: 1.4rem; font-weight: 700; color: var(--accent-dark); text-align: right; }
     .menu-price small { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
     .note { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 24px 0 0; }
+
+    /* お知らせ（ファーストビューの直下。<section> にすると下の背景の交互が入れ替わるので div で作る） */
+    .news-box {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+    }
+    .news-title { font-size: 1.15rem; margin: 0 0 4px; }
+    .news-list { margin: 0; padding: 0; list-style: none; }
+    .news-list li { padding: 12px 0; border-top: 1px solid var(--line); }
+    .news-list li:first-child { border-top: none; }
+    .news-list time { display: block; font-size: 0.85rem; color: var(--muted); }
+    .news-list h3 { font-size: 1rem; margin: 0; }
+    .news-list p { margin: 4px 0 0; font-size: 0.95rem; }
   </style>
   <!-- 残りのスタイルは描画を止めずに読み込む（media="print" で取得し、読み込み後に全画面へ適用） -->
   <link rel="stylesheet" href="style.css?v=ddcd749d" media="print" onload="this.media='all'">
@@ -201,6 +218,32 @@
           <li>専用駐車場 3台</li>
         </ul>
         <div><a class="btn" href="#menu">メニューを見る</a></div>
+      </div>
+    </div>
+
+    <!-- お知らせ（news.md の新しい順 3 件。/add-news で更新） -->
+    <div id="news" class="news" role="region" aria-labelledby="news-title">
+      <div class="container">
+        <div class="news-box">
+          <h2 class="news-title" id="news-title">お知らせ</h2>
+          <ul class="news-list">
+            <li>
+              <time datetime="2026-11-12">2026年11月12日</time>
+              <h3>12月の定休日のお知らせ</h3>
+              <p>12月の定休日は、毎週月曜日（7日・14日・21日・28日）と第3火曜日（15日）です。</p>
+            </li>
+            <li>
+              <time datetime="2026-11-12">2026年11月12日</time>
+              <h3>勤労感謝の日（11月23日）の営業について</h3>
+              <p>11月23日（月・祝）は営業します。翌日の11月24日（火）はお休みです。</p>
+            </li>
+            <li>
+              <time datetime="2026-11-12">2026年11月12日</time>
+              <h3>11月17日（火）は定休日です</h3>
+              <p>11月17日（火）は第3火曜日のため、お休みです。</p>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
