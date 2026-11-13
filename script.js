@@ -187,15 +187,22 @@ function renderCalendar(today = new Date()) {
 }
 
 /* =========================================================
- * お問い合わせフォーム（入力チェックのみ・送信しない）
+ * ご予約フォーム
+ * 入力をチェックしてから、予約システム（Google Apps Script のウェブアプリ）の
+ * /exec の URL へ送る。送信先の URL は index.html のフォームの data-endpoint に書く。
+ * 予約システムでも同じチェックをするので、ここでのチェックは入力ミスを早く知らせるためのもの。
  * ========================================================= */
 
-const MESSAGE_MAX = 500;
+const NOTES_MAX = 1000;
+const PEOPLE_MAX = 5; // 予約システムの 1 枠の定員（Reserve.gs の SLOT_CAPACITY）と同じにする
+const SEND_ERROR = '送信できませんでした。時間をおいて再度お試しいただくか、お電話（000-0000-0000）でご予約ください。';
+
+const todayKey = (d = new Date()) => dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
 
 const validators = {
   name(value) {
     if (!value.trim()) return 'お名前を入力してください。';
-    if (value.trim().length > 50) return 'お名前は50文字以内で入力してください。';
+    if (value.trim().length > 100) return 'お名前は100文字以内で入力してください。';
     return '';
   },
   email(value) {
@@ -204,7 +211,7 @@ const validators = {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'メールアドレスの形式が正しくありません（例：name@example.com）。';
     return '';
   },
-  tel(value) {
+  phone(value) {
     const v = value.trim();
     if (!v) return ''; // 任意
     if (!/^[0-9-]+$/.test(v)) return '電話番号は半角数字とハイフンで入力してください。';
@@ -212,18 +219,37 @@ const validators = {
     if (digits.length < 10 || digits.length > 11) return '電話番号は10〜11桁で入力してください。';
     return '';
   },
-  message(value) {
-    const v = value.trim();
-    if (!v) return 'お問い合わせ内容を入力してください。';
-    if (v.length > MESSAGE_MAX) return `お問い合わせ内容は${MESSAGE_MAX}文字以内で入力してください。`;
+  date(value) {
+    if (!value) return '希望日を選んでください。';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return '希望日の形式が正しくありません。';
+    if (value < todayKey()) return '希望日には今日以降の日付を選んでください。';
     return '';
+  },
+  time(value) {
+    if (!value) return '希望時間を選んでください。';
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return '希望時間の形式が正しくありません。';
+    return '';
+  },
+  people(value) {
+    const v = value.trim();
+    const n = Number(v);
+    if (!v) return '人数を入力してください。';
+    if (!Number.isInteger(n) || n < 1 || n > PEOPLE_MAX) return `人数は1〜${PEOPLE_MAX}の数字で入力してください。`;
+    return '';
+  },
+  notes(value) {
+    if (value.trim().length > NOTES_MAX) return `備考は${NOTES_MAX}文字以内で入力してください。`;
+    return '';
+  },
+  agree(_value, input) {
+    return input.checked ? '' : '個人情報の取り扱いへの同意にチェックを入れてください。';
   },
 };
 
 function validateField(input) {
   const check = validators[input.name];
   if (!check) return true;
-  const message = check(input.value);
+  const message = check(input.value, input);
   const error = document.getElementById(`${input.id}-error`);
   if (error) error.textContent = message;
   input.setAttribute('aria-invalid', message ? 'true' : 'false');
@@ -231,40 +257,100 @@ function validateField(input) {
 }
 
 function updateCharCount(textarea) {
-  const counter = document.getElementById('message-count');
+  const counter = document.getElementById(`${textarea.id}-count`);
   if (!counter) return;
   const length = textarea.value.trim().length;
-  counter.textContent = `${length} / ${MESSAGE_MAX}文字`;
-  counter.classList.toggle('over', length > MESSAGE_MAX);
+  counter.textContent = `${length} / ${NOTES_MAX}文字`;
+  counter.classList.toggle('over', length > NOTES_MAX);
 }
 
-function setupContactForm() {
-  const form = document.getElementById('contact-form');
+/** フォームの内容を、予約システムが受け取る形（項目名: 値）にまとめる */
+function collectReservation(form) {
+  const data = {};
+  for (const el of form.elements) {
+    if (!el.name) continue;
+    data[el.name] = el.type === 'checkbox' ? (el.checked ? el.value : '') : el.value;
+  }
+  return data;
+}
+
+/** 予約システムへ送り、返事（{ ok, message }）を受け取る。
+ *  text/plain で送るのは、ブラウザの事前確認（CORS のプリフライト）が起きないようにするため */
+async function sendReservation(endpoint, data) {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+function setupReservationForm() {
+  const form = document.getElementById('reservation-form');
   if (!form) return;
   const result = document.getElementById('form-result');
-  const fields = [...form.querySelectorAll('input, textarea')];
+  const submit = document.getElementById('reservation-submit');
+  const fields = [...form.querySelectorAll('input, textarea')].filter((el) => validators[el.name]);
+  const notes = form.elements.notes;
+  let sending = false;
+
+  // 過去の日付を選べないようにする
+  if (form.elements.date) form.elements.date.min = todayKey();
+
+  const showResult = (text, isError) => {
+    result.textContent = text;
+    result.classList.toggle('is-error', isError);
+  };
 
   for (const input of fields) {
     // 入力途中ではなく、一度離れてからチェックする
     input.addEventListener('blur', () => validateField(input));
-    input.addEventListener('input', () => {
+    const onChange = () => {
       if (input.getAttribute('aria-invalid') === 'true') validateField(input);
-      if (input.name === 'message') updateCharCount(input);
-      result.textContent = '';
-    });
+      if (input === notes) updateCharCount(input);
+      if (!sending) showResult('', false);
+    };
+    input.addEventListener('input', onChange);
+    input.addEventListener('change', onChange);
   }
 
-  form.addEventListener('submit', (event) => {
-    event.preventDefault(); // 送信はしない
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (sending) return;
 
     const invalid = fields.filter((input) => !validateField(input));
     if (invalid.length > 0) {
-      result.textContent = '入力内容に誤りがあります。赤字の項目をご確認ください。';
+      showResult('入力内容に誤りがあります。赤字の項目をご確認ください。', true);
       invalid[0].focus();
       return;
     }
 
-    result.textContent = '入力内容に問題はありません。（このページは見本のため、送信は行われません）';
+    sending = true;
+    submit.disabled = true;
+    submit.textContent = '送信中…';
+    showResult('送信しています…', false);
+    try {
+      const reply = await sendReservation(form.dataset.endpoint, collectReservation(form));
+      if (reply && reply.ok) {
+        form.reset();
+        for (const input of fields) {
+          input.removeAttribute('aria-invalid');
+          const error = document.getElementById(`${input.id}-error`);
+          if (error) error.textContent = '';
+        }
+        if (notes) updateCharCount(notes);
+        showResult('ご予約を受け付けました。ありがとうございました。', false);
+      } else {
+        showResult((reply && reply.message) || SEND_ERROR, true);
+      }
+    } catch (err) {
+      showResult(SEND_ERROR, true);
+    } finally {
+      sending = false;
+      submit.disabled = false;
+      submit.textContent = '予約する';
+    }
   });
 }
 
@@ -307,7 +393,7 @@ if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
     // DOM を書き換える処理を先に済ませ、レイアウトの読み取りは後に回す
     renderCalendar();
-    setupContactForm();
+    setupReservationForm();
     trackHeaderHeight();
   });
 }

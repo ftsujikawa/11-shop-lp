@@ -157,9 +157,9 @@
     .news-list p { margin: 4px 0 0; font-size: 0.95rem; }
   </style>
   <!-- 残りのスタイルは描画を止めずに読み込む（media="print" で取得し、読み込み後に全画面へ適用） -->
-  <link rel="stylesheet" href="style.css?v=ddcd749d" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="style.css?v=ddcd749d"></noscript>
-  <script src="script.min.js?v=f0e2da6d" defer></script>
+  <link rel="stylesheet" href="style.css?v=c0bebfec" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="style.css?v=c0bebfec"></noscript>
+  <script src="script.min.js?v=837ecf0b" defer></script>
   <!-- 構造化データ（schema.org/Bakery）。値は shop.md の店名・住所・電話番号・営業時間のみ -->
   <script type="application/ld+json">
   {
@@ -201,7 +201,7 @@
         <a href="#menu">メニュー</a>
         <a href="#calendar">営業日</a>
         <a href="#access">店舗情報</a>
-        <a href="#contact">お問い合わせ</a>
+        <a href="#reserve-form">ご予約</a>
       </nav>
     </div>
   </header>
@@ -406,42 +406,78 @@
       </div>
     </section>
 
-    <!-- お問い合わせ -->
-    <section id="contact">
+    <!-- ご予約フォーム（送信先は Google Apps Script のウェブアプリ。data-endpoint の /exec の URL へ送る） -->
+    <section id="reserve-form">
       <div class="container">
-        <h2 class="section-title">お問い合わせ</h2>
-        <p class="section-lead">ご予約はお電話または店頭のレジにて承ります。</p>
+        <h2 class="section-title">ご予約フォーム</h2>
+        <p class="section-lead">1つの時間枠のご予約は、合計5人までです。</p>
 
-        <form class="contact-form" id="contact-form" novalidate>
+        <form class="contact-form" id="reservation-form" novalidate
+              data-endpoint="https://script.google.com/macros/s/AKfycbwG9hDlxXmakM-RSUMB4UHVPl-rS1p5Ftt99eX7GmA7xNt3UQvjea_eTfrJlxYpt_U/exec">
           <div class="form-field">
             <label for="name">お名前 <span class="required">必須</span></label>
-            <input type="text" id="name" name="name" autocomplete="name" aria-describedby="name-error">
+            <input type="text" id="name" name="name" autocomplete="name" maxlength="100" aria-describedby="name-error">
             <p class="error" id="name-error" aria-live="polite"></p>
           </div>
 
           <div class="form-field">
             <label for="email">メールアドレス <span class="required">必須</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" inputmode="email" aria-describedby="email-error">
+            <input type="email" id="email" name="email" autocomplete="email" inputmode="email" maxlength="254" aria-describedby="email-error">
             <p class="error" id="email-error" aria-live="polite"></p>
           </div>
 
           <div class="form-field">
-            <label for="tel">電話番号 <span class="optional">任意</span></label>
-            <input type="tel" id="tel" name="tel" autocomplete="tel" inputmode="tel" placeholder="例：000-0000-0000" aria-describedby="tel-error">
-            <p class="error" id="tel-error" aria-live="polite"></p>
+            <label for="phone">電話番号 <span class="optional">任意</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="例：000-0000-0000" aria-describedby="phone-error">
+            <p class="error" id="phone-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="date">希望日 <span class="required">必須</span></label>
+              <input type="date" id="date" name="date" aria-describedby="date-error">
+              <p class="error" id="date-error" aria-live="polite"></p>
+            </div>
+            <div class="form-field">
+              <label for="time">希望時間 <span class="required">必須</span></label>
+              <input type="time" id="time" name="time" aria-describedby="time-error">
+              <p class="error" id="time-error" aria-live="polite"></p>
+            </div>
           </div>
 
           <div class="form-field">
-            <label for="message">お問い合わせ内容 <span class="required">必須</span></label>
-            <textarea id="message" name="message" rows="6" maxlength="1000" aria-describedby="message-count message-error"></textarea>
-            <p class="char-count" id="message-count">0 / 500文字</p>
-            <p class="error" id="message-error" aria-live="polite"></p>
+            <label for="people">人数 <span class="required">必須</span></label>
+            <input type="number" id="people" name="people" min="1" max="5" step="1" value="1" inputmode="numeric" aria-describedby="people-error">
+            <p class="error" id="people-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label for="notes">備考 <span class="optional">任意</span></label>
+            <textarea id="notes" name="notes" rows="4" maxlength="1000" aria-describedby="notes-count notes-error"></textarea>
+            <p class="char-count" id="notes-count">0 / 1000文字</p>
+            <p class="error" id="notes-error" aria-live="polite"></p>
+          </div>
+
+          <div class="form-field">
+            <label class="form-check" for="agree">
+              <input type="checkbox" id="agree" name="agree" value="on" aria-describedby="agree-error">
+              個人情報の取り扱いに同意します <span class="required">必須</span>
+            </label>
+            <p class="error" id="agree-error" aria-live="polite"></p>
+          </div>
+
+          <!-- ロボット対策の入力欄（ハニーポット）。人は入力しない。
+               aria-hidden と inert で読み上げソフトから隠し、tabindex="-1" で Tab キーでも移動しない -->
+          <div class="hp" aria-hidden="true" inert>
+            <label for="website">この欄は空のままにしてください</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="btn">入力内容を確認する</button>
+            <button type="submit" class="btn" id="reservation-submit">予約する</button>
           </div>
           <p class="form-result" id="form-result" role="status"></p>
+          <noscript><p class="form-result">送信には JavaScript が必要です。お電話（000-0000-0000）でもご予約いただけます。</p></noscript>
         </form>
       </div>
     </section>
